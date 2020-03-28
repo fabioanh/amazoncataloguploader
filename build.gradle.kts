@@ -32,6 +32,9 @@ dependencies {
 
     // Amazon AWS-S3 libraries
     implementation("com.amazonaws:aws-java-sdk-s3control:1.11.753")
+
+    // GSon
+    implementation("com.google.code.gson:gson:2.8.5")
 }
 
 application {
