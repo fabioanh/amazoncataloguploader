@@ -10,9 +10,8 @@ interface FileParserFactory{
 object ObjectFileParserFactory:FileParserFactory {
 
     override fun getParser(version: ParserVersion):Parser{
-        return TODO()
-//        return when(version){
-//            ParserVersion.V1 -> ParserV1()
-//        }
+        return when(version){
+            ParserVersion.V1 -> ParserV1()
+        }
     }
 }
