@@ -24,7 +24,7 @@ class ParserV1Test {
 
     @Test
     fun parseSpeciesList() {
-        val result = parser.parseSpeciesList("testSpeciesList.json")
+        val result = parser.parseSpeciesList("./src/test/resources/testSpeciesList.json")
         val expectedSpecies = getExpectedSpeciesList()
         assertEquals(expectedSpecies, result, "Species List object was not parsed properly")
     }
@@ -69,8 +69,18 @@ class ParserV1Test {
     }
 
     private fun getExpectedSpeciesList(): SpeciesList {
-        val animal1 = SpeciesListDataObject("idAnimal1", listOf(LanguagedValue("stripped jaguar", "en"), LanguagedValue("jaguar rayado", "es")))
-        val animal2 = SpeciesListDataObject("idAnimal2", listOf(LanguagedValue("assassin ant", "en"), LanguagedValue("hormiga asesina", "es")))
+        val animal1 = SpeciesListDataObject("idAnimal1",
+                listOf(LanguagedValue("stripped jaguar", "en"),
+                        LanguagedValue("jaguar rayado", "es"),
+                        LanguagedValue("Jaguarayado", "unknown")))
+
+        val animal2 = SpeciesListDataObject("idAnimal2",
+                listOf(LanguagedValue("assassin ant", "en"),
+                        LanguagedValue("Attentöterameise", "de"),
+                        LanguagedValue("hormigota malota", "unknown"),
+                        LanguagedValue("fourmi assassine", "fr"),
+                        LanguagedValue("hormiga asesina", "es")))
+
         return SpeciesList("V1", listOf(animal1, animal2))
     }
 
