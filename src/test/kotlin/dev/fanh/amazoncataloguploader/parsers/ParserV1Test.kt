@@ -11,7 +11,7 @@ class ParserV1Test {
     @Test
     fun parseMinimumSpecies() {
         val result = parser.parseSpecies("./src/test/resources/testMinimumSpecies.json")
-        val expectedSpecies = getExpectedSpecies()
+        val expectedSpecies = getExpectedMinimumSpecies()
         assertEquals(expectedSpecies, result, "Minimum Species object was not parsed properly")
     }
 
@@ -41,7 +41,7 @@ class ParserV1Test {
         val result = parser.parseKingdoms("./src/test/resources/testEmptyKingdoms.json")
     }
 
-    private fun getExpectedSpecies(): Species {
+    private fun getExpectedMinimumSpecies(): Species {
         return Species(version = "V1",
                 id = "idAnimal1",
                 commonNames = listOf(LanguagedValue("stripped jaguar", "en"),
@@ -55,18 +55,20 @@ class ParserV1Test {
     private fun getExpectedCompleteSpecies(): Species {
         return Species(version = "V1",
                 id = "idAnimal1",
-                commonNames = listOf(LanguagedValue("stripped jaguar", "en")),
+                commonNames = listOf(LanguagedValue("stripped jaguar", "en"),
+                        LanguagedValue("jaguar rayado", "es"),
+                        LanguagedValue("Jaguarayado", "unknown")),
                 description = "The stripped jaguar is a cat that resembles a Zebra, beware!",
                 fullDescription = "The stripped jaguar is very difficult to spot as it hides in the middle of Zebra groups. Some tribes refer to it as a wolf in sheep's clothing",
                 scientificName = "Jaguarus Felinus Rayadus",
                 behaviour = "This animal behaves wildly. Simultánea",
-                endangeredStatus = listOf(LocalisedValue("En Peligro Crítico (CR)", "co"), LocalisedValue("Preocupación Menor (LC)", "global")),
+                endangeredStatus = listOf(LocalisedValue("En peligro crítico (CR)", "co"), LocalisedValue("Preocupación menor (LC)", "Global")),
                 feeding = "Eats only aquatic zebras from the Peruvian Amazon",
                 habitat = "Amazon river bank",
                 imageURLs = listOf("https://d2ouvy59p0dg6k.cloudfront.net/img/original/original_ww2137556.jpg",
+                        "https://url2.com/img2.jpg",
                         "https://url1.com/img1.jpg",
                         "https://url5.com/img5.jpg",
-                        "https://url2.com/img2.jpg",
                         "https://url3.com/img3.jpg",
                         "https://url4.com/img4.jpg"),
                 lifecycle = "Its reproduction cycle is tied to the pink dolphins dancing habits",

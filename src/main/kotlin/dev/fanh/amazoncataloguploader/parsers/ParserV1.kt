@@ -17,11 +17,11 @@ public class ParserV1 : Parser {
                 commonNames = extractCommonNames(speciesDataObject.get("commonNames")),
                 description = speciesDataObject.get("abstractApprovedInUse")?.asJsonObject?.get("abstract")?.asString
                         ?: throw Exception("Description should not be null"),
-                endangeredStatus = extractEndangeredStatus(speciesDataObject.get("threatStatusApprovedInUse").asJsonObject.get("threatStatus")),
+                endangeredStatus = extractEndangeredStatus(speciesDataObject.get("threatStatusApprovedInUse")?.asJsonObject?.get("threatStatus")?.asJsonArray),
                 feeding = speciesDataObject.get("feedingApprovedInUse")?.asJsonObject?.get("feeding")?.asJsonObject?.get("feedingUnstructured")?.asString,
                 fullDescription = speciesDataObject.get("fullDescriptionApprovedInUse")?.asJsonObject?.get("fullDescription")?.asJsonObject?.get("fullDescriptionUnstructured")?.asString
                         ?: throw Exception("Full Description should not be null"),
-                habitat = speciesDataObject.get("habitatsApprovedInUse")?.asJsonObject?.get("habitats")?.asJsonObject?.get("habitatsUnstructured")?.asString,
+                habitat = speciesDataObject.get("habitatsApprovedInUse")?.asJsonObject?.get("habitats")?.asJsonObject?.get("habitatUnstructured")?.asString,
                 imageURLs = extractImages(speciesDataObject.get("ancillaryDataApprovedInUse")?.asJsonObject?.get("ancillaryData")?.asJsonArray),
                 lifecycle = speciesDataObject.get("lifeCycleApprovedInUse")?.asJsonObject?.get("lifeCycle")?.asJsonObject?.get("lifeCycleUnstructured")?.asString,
                 lifeForm = speciesDataObject.get("lifeFormApprovedInUse")?.asJsonObject?.get("lifeForm")?.asJsonObject?.get("lifeFormUnstructured")?.asString,
@@ -31,26 +31,26 @@ public class ParserV1 : Parser {
                         ?: throw Exception("Scientific Name should not be null"))
     }
 
-    private fun extractImages(imageElements: JsonArray?): List<String>? {
-        val result: ArrayList<String>? = ArrayList<String>()
-        imageElements?.forEach{
-            elem -> val obj = elem.asJsonObject
-            result?.add(obj.get("source").asString)
-            result?.addAll(obj.get("mediaUrl").asJsonArray.map { e -> e.asString })
-        }
-        return result
-    }
-
-    private fun extractEndangeredStatus(endangeredStatusElements: JsonElement): List<LocalisedValue>? {
+    private fun extractEndangeredStatus(endangeredStatusElements: JsonArray?): List<LocalisedValue>? {
         val endangeredStatus = ArrayList<LocalisedValue>()
-        endangeredStatusElements.asJsonArray.forEach { elem ->
-            val location = elem.asJsonObject.get("threatStatusAtomized")?.asJsonObject?.get("appliesTo")?.asString
+        endangeredStatusElements?.forEach { elem ->
+            val location = elem.asJsonObject.get("threatStatusAtomized")?.asJsonObject?.get("appliesTo")?.asJsonObject?.get("country")?.asString
             val threatValue = elem.asJsonObject.get("threatStatusAtomized")?.asJsonObject?.get("threatCategory")?.asJsonObject?.get("measurementValue")?.asString
             if (threatValue != null && location != null) {
                 endangeredStatus.add(LocalisedValue(threatValue, isoLocation(location)))
             }
         }
-        return endangeredStatus
+        return if (endangeredStatus.isEmpty()) null else endangeredStatus
+    }
+
+    private fun extractImages(imageElements: JsonArray?): List<String>? {
+        val result: ArrayList<String>? = ArrayList<String>()
+        imageElements?.forEach{
+            elem -> val obj = elem.asJsonObject
+            obj.get("source")?.asString?.let { result?.add(it) }
+            obj.get("mediaURL")?.asJsonArray?.map { e -> e.asString }?.let { result?.addAll(it) }
+        }
+        return if (result!!.isEmpty()) null else result
     }
 
     override fun parseSpeciesList(filename: String): SpeciesList {
