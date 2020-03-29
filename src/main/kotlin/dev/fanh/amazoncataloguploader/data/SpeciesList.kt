@@ -1,8 +1,7 @@
 package dev.fanh.amazoncataloguploader.data
 
-class SpeciesList(version: String, species: List<SpeciesListDataObject>) {
+data class SpeciesList(val version: String, val species: List<SpeciesListDataObject>) {
 }
 
-class SpeciesListDataObject (id: String, names: List<LanguagedValue>){
-
+data class SpeciesListDataObject (val id: String, val names: List<LanguagedValue>){
 }

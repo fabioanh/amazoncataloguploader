@@ -2,4 +2,4 @@ package dev.fanh.amazoncataloguploader.data
 
 import java.util.*
 
-class LanguagedValue(value: String, isoLanguage: String){}
+data class LanguagedValue(val value: String, val isoLanguage: String){}

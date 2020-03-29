@@ -1,18 +1,18 @@
 package dev.fanh.amazoncataloguploader.data
 
-class Species(version: String,
-              id: String,
-              behaviour: String? = null,
-              commonNames: List<LanguagedValue>,
-              description: String,
-              endangeredStatus: List<LocalisedValue>? = null,
-              feeding: String? = null,
-              fullDescription: String,
-              habitat: String? = null,
-              imageURLs: List<String>? = null,
-              lifecycle: String? = null,
-              lifeForm: String? = null,
-              migration: String? = null,
-              reproduction: String? = null,
-              scientificName: String) {
+data class Species(val version: String,
+                   val id: String,
+                   val behaviour: String? = null,
+                   val commonNames: List<LanguagedValue>,
+                   val description: String,
+                   val endangeredStatus: List<LocalisedValue>? = null,
+                   val feeding: String? = null,
+                   val fullDescription: String,
+                   val habitat: String? = null,
+                   val imageURLs: List<String>? = null,
+                   val lifecycle: String? = null,
+                   val lifeForm: String? = null,
+                   val migration: String? = null,
+                   val reproduction: String? = null,
+                   val scientificName: String) {
 }
