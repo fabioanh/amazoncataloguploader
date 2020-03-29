@@ -10,14 +10,14 @@ class ParserV1Test {
 
     @Test
     fun parseMinimumSpecies() {
-        val result = parser.parseSpecies("testMinimumSpecies.json")
+        val result = parser.parseSpecies("./src/test/resources/testMinimumSpecies.json")
         val expectedSpecies = getExpectedSpecies()
         assertEquals(expectedSpecies, result, "Minimum Species object was not parsed properly")
     }
 
     @Test
     fun parseCompleteSpecies() {
-        val result = parser.parseSpecies("testCompleteSpecies.json")
+        val result = parser.parseSpecies("./src/test/resources/testCompleteSpecies.json")
         val expectedSpecies = getExpectedCompleteSpecies()
         assertEquals(expectedSpecies, result, "Full Species object was not parsed properly")
     }
@@ -60,7 +60,7 @@ class ParserV1Test {
                 fullDescription = "The stripped jaguar is very difficult to spot as it hides in the middle of Zebra groups. Some tribes refer to it as a wolf in sheep's clothing",
                 scientificName = "Jaguarus Felinus Rayadus",
                 behaviour = "This animal behaves wildly. Simultánea",
-                endangeredStatus = listOf(LocalisedValue("En Peligro", "co"), LocalisedValue("En Peligro Crítico (CR)", "global")),
+                endangeredStatus = listOf(LocalisedValue("En Peligro Crítico (CR)", "co"), LocalisedValue("Preocupación Menor (LC)", "global")),
                 feeding = "Eats only aquatic zebras from the Peruvian Amazon",
                 habitat = "Amazon river bank",
                 imageURLs = listOf("https://d2ouvy59p0dg6k.cloudfront.net/img/original/original_ww2137556.jpg",

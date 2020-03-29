@@ -2,6 +2,7 @@ package dev.fanh.amazoncataloguploader.parsers
 
 import com.google.gson.*
 import dev.fanh.amazoncataloguploader.data.*
+import dev.fanh.amazoncataloguploader.utils.isoLocation
 import dev.fanh.amazoncataloguploader.utils.languageFromJsonV1
 
 public class ParserV1 : Parser {
@@ -14,25 +15,42 @@ public class ParserV1 : Parser {
                 id = speciesDataObject.get("_id").asString,
                 behaviour = speciesDataObject.get("behaviorApprovedInUse")?.asJsonObject?.get("behavior")?.asJsonObject?.get("behaviorUnstructured")?.asString,
                 commonNames = extractCommonNames(speciesDataObject.get("commonNames")),
-                description = speciesDataObject.get("abstractApprovedInUse")?.asJsonObject?.get("abstract")?.asString ?: throw Exception("Description should not be null"),
-                endangeredStatus = extractEndangeredStatus(speciesDataObject.get("threatStatusApprovedInUse")), //speciesDataObject.get("threatStatusValue")
+                description = speciesDataObject.get("abstractApprovedInUse")?.asJsonObject?.get("abstract")?.asString
+                        ?: throw Exception("Description should not be null"),
+                endangeredStatus = extractEndangeredStatus(speciesDataObject.get("threatStatusApprovedInUse").asJsonObject.get("threatStatus")),
                 feeding = speciesDataObject.get("feedingApprovedInUse")?.asJsonObject?.get("feeding")?.asJsonObject?.get("feedingUnstructured")?.asString,
-                fullDescription = speciesDataObject.get("fullDescriptionApprovedInUse")?.asJsonObject?.get("fullDescription")?.asJsonObject?.get("fullDescriptionUnstructured")?.asString ?: throw Exception("Full Description should not be null"),
+                fullDescription = speciesDataObject.get("fullDescriptionApprovedInUse")?.asJsonObject?.get("fullDescription")?.asJsonObject?.get("fullDescriptionUnstructured")?.asString
+                        ?: throw Exception("Full Description should not be null"),
                 habitat = speciesDataObject.get("habitatsApprovedInUse")?.asJsonObject?.get("habitats")?.asJsonObject?.get("habitatsUnstructured")?.asString,
                 imageURLs = extractImages(speciesDataObject.get("ancillaryDataApprovedInUse")?.asJsonObject?.get("ancillaryData")?.asJsonArray),
                 lifecycle = speciesDataObject.get("lifeCycleApprovedInUse")?.asJsonObject?.get("lifeCycle")?.asJsonObject?.get("lifeCycleUnstructured")?.asString,
                 lifeForm = speciesDataObject.get("lifeFormApprovedInUse")?.asJsonObject?.get("lifeForm")?.asJsonObject?.get("lifeFormUnstructured")?.asString,
                 migration = speciesDataObject.get("migratoryApprovedInUse")?.asJsonObject?.get("migratory")?.asJsonObject?.get("migratoryUnstructured")?.asString,
                 reproduction = speciesDataObject.get("reproductionApprovedInUse")?.asJsonObject?.get("reproduction")?.asJsonObject?.get("reproductionUnstructured")?.asString,
-                scientificName = speciesDataObject.get("scientificNameSimple")?.asString ?: throw Exception("Scientific Name should not be null"))
+                scientificName = speciesDataObject.get("scientificNameSimple")?.asString
+                        ?: throw Exception("Scientific Name should not be null"))
     }
 
     private fun extractImages(imageElements: JsonArray?): List<String>? {
-        TODO()
+        val result: ArrayList<String>? = ArrayList<String>()
+        imageElements?.forEach{
+            elem -> val obj = elem.asJsonObject
+            result?.add(obj.get("source").asString)
+            result?.addAll(obj.get("mediaUrl").asJsonArray.map { e -> e.asString })
+        }
+        return result
     }
 
     private fun extractEndangeredStatus(endangeredStatusElements: JsonElement): List<LocalisedValue>? {
-        TODO()
+        val endangeredStatus = ArrayList<LocalisedValue>()
+        endangeredStatusElements.asJsonArray.forEach { elem ->
+            val location = elem.asJsonObject.get("threatStatusAtomized")?.asJsonObject?.get("appliesTo")?.asString
+            val threatValue = elem.asJsonObject.get("threatStatusAtomized")?.asJsonObject?.get("threatCategory")?.asJsonObject?.get("measurementValue")?.asString
+            if (threatValue != null && location != null) {
+                endangeredStatus.add(LocalisedValue(threatValue, isoLocation(location)))
+            }
+        }
+        return endangeredStatus
     }
 
     override fun parseSpeciesList(filename: String): SpeciesList {
