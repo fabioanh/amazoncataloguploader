@@ -3,13 +3,43 @@
  */
 package dev.fanh.amazoncataloguploader
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider
+import com.amazonaws.auth.BasicAWSCredentials
+import com.amazonaws.regions.Regions
+import com.amazonaws.services.s3.AmazonS3Client
+import com.amazonaws.services.s3.AmazonS3ClientBuilder
+import dev.fanh.amazoncataloguploader.parsers.ParserVersion
+
+private val credentials = {
+    TODO("load credentials from properties file")
+}
+
+fun initAmazonS3Client() = AmazonS3ClientBuilder.standard()
+        .withRegion(Regions.EU_CENTRAL_1)
+        .withCredentials(AWSStaticCredentialsProvider(credentials))
+        .build()
+
 class App {
-    val greeting: String
-        get() {
-            return "Hello world."
-        }
+    fun uploadData(rootPath: String, version: String) {
+
+        // Parse Kingdoms
+        // Upload Kingdoms to S3
+
+        // Parse species_list.json for each kingdom folder
+        // Upload species_list.json to S3
+
+        // Parse each species in the species folder
+        // Upload each species to S3
+    }
+
 }
 
 fun main(args: Array<String>) {
-    println(App().greeting)
+    if (args.size == 2 || args.isEmpty()) {
+        var rootPath: String = args[0] ?: "/home/fakefla/develop/python/workspace/AmazonCatalog/animal_data/animalia"
+        var version: String = args[1] ?: ParserVersion.V1.name
+        App().uploadData(rootPath, version)
+    } else {
+        throw Exception("Wrong number of arguments")
+    }
 }
