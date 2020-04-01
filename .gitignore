@@ -42,3 +42,5 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
+# AWS credentials
+src/main/resources/aws-credentials.properties

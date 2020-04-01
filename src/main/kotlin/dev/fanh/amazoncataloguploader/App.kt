@@ -3,43 +3,106 @@
  */
 package dev.fanh.amazoncataloguploader
 
+import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.regions.Regions
-import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
+import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.types.enum
+import com.google.gson.Gson
+import dev.fanh.amazoncataloguploader.data.KingdomList
+import dev.fanh.amazoncataloguploader.data.Species
+import dev.fanh.amazoncataloguploader.data.SpeciesList
+import dev.fanh.amazoncataloguploader.parsers.ObjectFileParserFactory
+import dev.fanh.amazoncataloguploader.parsers.Parser
 import dev.fanh.amazoncataloguploader.parsers.ParserVersion
+import mu.KotlinLogging
+import java.nio.file.Paths
+import java.util.*
 
-private val credentials = {
-    TODO("load credentials from properties file")
-}
+private val logger = KotlinLogging.logger {}
 
-fun initAmazonS3Client() = AmazonS3ClientBuilder.standard()
-        .withRegion(Regions.EU_CENTRAL_1)
-        .withCredentials(AWSStaticCredentialsProvider(credentials))
-        .build()
+enum class Mode { FULL, SINGLE, PARTIAL }
 
-class App {
-    fun uploadData(rootPath: String, version: String) {
+class App : CliktCommand() {
+    val mode: Mode? by option(help = "Mode to use for the upload. Full, Partial or Single").enum<Mode>().default(Mode.FULL)
+    val path: String by option(help = "Path to the root directory in case of Full or partial modes, or path to the file in case of the single upload").default("/home/fakefla/develop/python/workspace/AmazonCatalog/animal_data/")
+    val version: String by option(help = "Version of the parsers to be used").default("V1")
+    val kingdom: String by option(help = "Kingdom to be used in the single species upload").default("animalia")
+    val delimiter: String? by option(help = "Id delimiter of the list of species to start from it in case a partial upload is required")
 
+    private val bucketCatalog: String = "amazoncatalogfanh"
+
+    private val credentials: AWSCredentials = run {
+        val props = javaClass.classLoader.getResourceAsStream("aws-credentials.properties").use {
+            Properties().apply { load(it) }
+        }
+        BasicAWSCredentials(props["accessKey"] as String?, props["secretKey"] as String?)
+    }
+
+    private val amazonS3Client = AmazonS3ClientBuilder.standard()
+            .withRegion(Regions.SA_EAST_1)
+            .withCredentials(AWSStaticCredentialsProvider(credentials))
+            .build()
+
+    private val gson = Gson()
+
+    override fun run() {
+        val parserVersion: ParserVersion = ParserVersion.valueOf(version)
+        when (mode) {
+            Mode.FULL -> uploadData(this.path, parserVersion)
+            Mode.PARTIAL -> uploadData(this.path, parserVersion, delimiter)
+            Mode.SINGLE -> uploadSingleSpecies(this.path, parserVersion, this.kingdom)
+        }
+        logger.info("Data processing finished successfully")
+    }
+
+    private fun uploadSingleSpecies(path: String, version: ParserVersion, kingdom: String) {
+        processSpecies(ObjectFileParserFactory.getParser(version), path, kingdom)
+    }
+
+    private fun uploadData(rootPath: String, version: ParserVersion, partialIdDelimiter: String? = null) {
+        logger.info("Data upload process started...")
+        val parser: Parser = ObjectFileParserFactory.getParser(version)
         // Parse Kingdoms
+        logger.info("Parsing kingdoms")
+        val kingdoms: KingdomList = parser.parseKingdoms("${rootPath}kingdoms.json")
+        logger.info { "${kingdoms.kingdoms.size} kingdoms found" }
         // Upload Kingdoms to S3
+        amazonS3Client.putObject(bucketCatalog, "/kingdoms.json", gson.toJson(kingdoms))
+        logger.info("Kingdoms uploaded successfully to S3")
 
         // Parse species_list.json for each kingdom folder
-        // Upload species_list.json to S3
+        kingdoms.kingdoms.forEach { kingdom ->
+            logger.info { "Parsing species list for kingdom $kingdom" }
+            val speciesList: SpeciesList = parser.parseSpeciesList("$rootPath${kingdom.toLowerCase()}/species_list.json")
+            // Upload species_list.json to S3
+            amazonS3Client.putObject(bucketCatalog, "/${kingdom.toLowerCase()}/speciesList.json", gson.toJson(speciesList))
+            logger.info { "Species List for $kingdom uploaded successfully to S3" }
+            logger.info { "${speciesList.species.size} species found for $kingdom" }
+            var performProcessing = partialIdDelimiter == null
+            // Parse each species in the species folder
+            speciesList.species.forEach {
+                performProcessing = performProcessing or (it.id == partialIdDelimiter)
+                if (performProcessing) {
+                    processSpecies(parser, "$rootPath${kingdom.toLowerCase()}/species/${it.id}.json", kingdom)
+                }
+            }
+        }
 
-        // Parse each species in the species folder
+    }
+
+
+    private fun processSpecies(parser: Parser, path: String, kingdom: String) {
+        logger.info { "Parsing species in file: ${Paths.get(path).fileName}" }
+        val species: Species = parser.parseSpecies(path)
         // Upload each species to S3
-    }
-
-}
-
-fun main(args: Array<String>) {
-    if (args.size == 2 || args.isEmpty()) {
-        var rootPath: String = args[0] ?: "/home/fakefla/develop/python/workspace/AmazonCatalog/animal_data/animalia"
-        var version: String = args[1] ?: ParserVersion.V1.name
-        App().uploadData(rootPath, version)
-    } else {
-        throw Exception("Wrong number of arguments")
+        amazonS3Client.putObject(bucketCatalog, "/${kingdom.toLowerCase()}/species/${species.id}.json", gson.toJson(species))
+        logger.info { "Species ${species.id} uploaded successfully to S3" }
     }
 }
+
+fun main(args: Array<String>) = App().main(args)

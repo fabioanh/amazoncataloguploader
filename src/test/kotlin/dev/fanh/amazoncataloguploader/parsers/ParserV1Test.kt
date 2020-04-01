@@ -81,14 +81,16 @@ class ParserV1Test {
         val animal1 = SpeciesListDataObject("idAnimal1",
                 listOf(LanguagedValue("stripped jaguar", "en"),
                         LanguagedValue("jaguar rayado", "es"),
-                        LanguagedValue("Jaguarayado", "unknown")))
+                        LanguagedValue("Jaguarayado", "unknown")),
+        "scientificus nominus animalus 1")
 
         val animal2 = SpeciesListDataObject("idAnimal2",
                 listOf(LanguagedValue("assassin ant", "en"),
                         LanguagedValue("Attentöterameise", "de"),
                         LanguagedValue("hormigota malota", "unknown"),
                         LanguagedValue("fourmi assassine", "fr"),
-                        LanguagedValue("hormiga asesina", "es")))
+                        LanguagedValue("hormiga asesina", "es")),
+        "scientificus nominus animalus 2")
 
         return SpeciesList("V1", listOf(animal1, animal2))
     }

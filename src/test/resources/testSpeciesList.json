@@ -315,7 +315,7 @@
             "mainImage": "https://farm8.staticflickr.com/7364/16486263202_fa748bd277.jpg",
             "source": "https://www.flickr.com/photos/wilfredor/16486263202/in/photolist-r7QnMY-r7QpFh-fgMq6L-5ZVHRP-5ZZTUA-5ZZN5y-5ZVC7i-amiwsd-amiwgj-amfJ2H-amivwQ-amfHiP-izJxKj-z3xQc3-yo8Xaw-zkaBt4-z3yWE9-62AVEL-4RBJpo-4Rxxnx-nf3z4j"
         },
-        "scientificNameSimple": "Podocnemis expansa Schweigger, 1812",
+        "scientificNameSimple": "scientificus nominus animalus 1",
         "threatStatusApprovedInUse": {
             "__t": "ThreatStatusVersion",
             "__v": 0,
@@ -715,7 +715,7 @@
             "state": "accepted",
             "version": 1
         },
-        "scientificNameSimple": "Podocnemis unifilis Troschel, 1848",
+        "scientificNameSimple": "scientificus nominus animalus 2",
         "threatStatusApprovedInUse": {
             "__t": "ThreatStatusVersion",
             "__v": 0,
