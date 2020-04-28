@@ -9,10 +9,10 @@ class ParserV1Test {
     private val parser = ParserV1()
 
     @Test
-    fun parseMinimumSpecies() {
-        val result = parser.parseSpecies("./src/test/resources/testMinimumSpecies.json")
-        val expectedSpecies = getExpectedMinimumSpecies()
-        assertEquals(expectedSpecies, result, "Minimum Species object was not parsed properly")
+    fun parseBasicSpecies() {
+        val result = parser.parseSpecies("./src/test/resources/testBasicSpecies.json")
+        val expectedSpecies = getExpectedBasicSpecies()
+        assertEquals(expectedSpecies, result, "Basic Species object was not parsed properly")
     }
 
     @Test
@@ -41,7 +41,47 @@ class ParserV1Test {
         val result = parser.parseKingdoms("./src/test/resources/testEmptyKingdoms.json")
     }
 
-    private fun getExpectedMinimumSpecies(): Species {
+    @Test
+    fun parseSpeciesNoCommonNames() {
+        val result = parser.parseSpecies("./src/test/resources/testNoCommonNamesSpecies.json")
+        val expectedSpecies = getExpectedNoCommonNamesSpecies()
+        assertEquals(expectedSpecies, result, "Basic Species object was not parsed properly")
+    }
+
+    @Test
+    fun parseSpeciesEmptyCommonNames() {
+        val result = parser.parseSpecies("./src/test/resources/testEmptyCommonNamesSpecies.json")
+        val expectedSpecies = getExpectedEmptyCommonNamesSpecies()
+        assertEquals(expectedSpecies, result, "Basic Species object was not parsed properly")
+    }
+
+    @Test
+    fun parseSpeciesNoFullDescription() {
+        val result = parser.parseSpecies("./src/test/resources/testNoFullDescriptionSpecies.json")
+        val expectedSpecies = getExpectedNoFullDescriptionSpecies()
+        assertEquals(expectedSpecies, result, "Basic Species object was not parsed properly")
+    }
+
+    private fun getExpectedEmptyCommonNamesSpecies(): Species {
+        return Species(version = "V1",
+                id = "idAnimal1",
+                commonNames = ArrayList(),
+                description = "The stripped jaguar is a cat that resembles a Zebra, beware!",
+                fullDescription = "The stripped jaguar is very difficult to spot as it hides in the middle of Zebra groups. Some tribes refer to it as a wolf in sheep's clothing",
+                scientificName = "Jaguarus Felinus Rayadus")
+
+    }
+
+    private fun getExpectedNoCommonNamesSpecies(): Species {
+        return Species(version = "V1",
+                id = "idAnimal1",
+                description = "The stripped jaguar is a cat that resembles a Zebra, beware!",
+                fullDescription = "The stripped jaguar is very difficult to spot as it hides in the middle of Zebra groups. Some tribes refer to it as a wolf in sheep's clothing",
+                scientificName = "Jaguarus Felinus Rayadus")
+
+    }
+
+    private fun getExpectedBasicSpecies(): Species {
         return Species(version = "V1",
                 id = "idAnimal1",
                 commonNames = listOf(LanguagedValue("stripped jaguar", "en"),
@@ -49,6 +89,16 @@ class ParserV1Test {
                         LanguagedValue("Jaguarayado", "unknown")),
                 description = "The stripped jaguar is a cat that resembles a Zebra, beware!",
                 fullDescription = "The stripped jaguar is very difficult to spot as it hides in the middle of Zebra groups. Some tribes refer to it as a wolf in sheep's clothing",
+                scientificName = "Jaguarus Felinus Rayadus")
+    }
+
+    private fun getExpectedNoFullDescriptionSpecies(): Species {
+        return Species(version = "V1",
+                id = "idAnimal1",
+                commonNames = listOf(LanguagedValue("stripped jaguar", "en"),
+                        LanguagedValue("jaguar rayado", "es"),
+                        LanguagedValue("Jaguarayado", "unknown")),
+                description = "The stripped jaguar is a cat that resembles a Zebra, beware!",
                 scientificName = "Jaguarus Felinus Rayadus")
     }
 

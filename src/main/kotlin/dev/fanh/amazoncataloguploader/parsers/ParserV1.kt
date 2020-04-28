@@ -24,7 +24,7 @@ public class ParserV1 : Parser {
         return Species(version = this.version.name,
                 id = speciesDataObject.get("_id").asString,
                 behaviour = speciesDataObject.get("behaviorApprovedInUse")?.asJsonObject?.get("behavior")?.asJsonObject?.get("behaviorUnstructured")?.asString,
-                commonNames = extractCommonNames(let { speciesDataObject.get("commonNames") }),
+                commonNames = extractCommonNames(speciesDataObject.get("commonNames")),
                 description = speciesDataObject.get("abstractApprovedInUse")?.asJsonObject?.get("abstract")?.asString,
                 endangeredStatus = extractEndangeredStatus(speciesDataObject.get("threatStatusApprovedInUse")?.asJsonObject?.get("threatStatus")?.asJsonArray),
                 feeding = speciesDataObject.get("feedingApprovedInUse")?.asJsonObject?.get("feeding")?.asJsonObject?.get("feedingUnstructured")?.asString,
@@ -67,7 +67,7 @@ public class ParserV1 : Parser {
         return SpeciesList(this.version.name,
                 speciesArrayJsonObject.map { obj ->
                     SpeciesListDataObject(obj.get("_id").asString,
-                            extractCommonNames(let { obj.get("commonNames") }),
+                            extractCommonNames(obj.get("commonNames")),
                             obj.get("scientificNameSimple").asString)
                 })
     }
