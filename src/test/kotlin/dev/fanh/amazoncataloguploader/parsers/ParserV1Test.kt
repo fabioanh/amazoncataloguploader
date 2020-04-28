@@ -146,6 +146,6 @@ class ParserV1Test {
     }
 
     private fun getExpectedKingdoms(): KingdomList {
-        return KingdomList("V1", listOf("Animalia"))
+        return KingdomList("V1", listOf(Kingdom("Animalia")))
     }
 }

@@ -78,9 +78,9 @@ class App : CliktCommand() {
         // Parse species_list.json for each kingdom folder
         kingdoms.kingdoms.forEach { kingdom ->
             logger.info { "Parsing species list for kingdom $kingdom" }
-            val speciesList: SpeciesList = parser.parseSpeciesList("$rootPath${kingdom.toLowerCase()}/species_list.json")
+            val speciesList: SpeciesList = parser.parseSpeciesList("$rootPath${kingdom.name.toLowerCase()}/species_list.json")
             // Upload species_list.json to S3
-            amazonS3Client.putObject(bucketCatalog, "/${kingdom.toLowerCase()}/speciesList.json", gson.toJson(speciesList))
+            amazonS3Client.putObject(bucketCatalog, "/${kingdom.name.toLowerCase()}/speciesList.json", gson.toJson(speciesList))
             logger.info { "Species List for $kingdom uploaded successfully to S3" }
             logger.info { "${speciesList.species.size} species found for $kingdom" }
             var performProcessing = partialIdDelimiter == null
@@ -88,7 +88,7 @@ class App : CliktCommand() {
             speciesList.species.forEach {
                 performProcessing = performProcessing or (it.id == partialIdDelimiter)
                 if (performProcessing) {
-                    processSpecies(parser, "$rootPath${kingdom.toLowerCase()}/species/${it.id}.json", kingdom)
+                    processSpecies(parser, "$rootPath${kingdom.name.toLowerCase()}/species/${it.id}.json", kingdom.name)
                 }
             }
         }

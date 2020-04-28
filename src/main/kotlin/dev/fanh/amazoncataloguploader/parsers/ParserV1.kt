@@ -82,7 +82,7 @@ public class ParserV1 : Parser {
         if (kingdoms.isEmpty()) {
             throw Exception("The list of kingdoms cannot be empty")
         }
-        return KingdomList(this.version.name, kingdoms.asList())
+        return KingdomList(this.version.name, kingdoms.map { k -> Kingdom(k) })
     }
 
 }
