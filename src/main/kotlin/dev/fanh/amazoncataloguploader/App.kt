@@ -62,6 +62,7 @@ class App : CliktCommand() {
     }
 
     private fun uploadSingleSpecies(path: String, version: ParserVersion, kingdom: Kingdom) {
+        // TODO: Implement update of speciesList to add the single entry if not present, or update it if already there
         processSpecies(ObjectFileParserFactory.getParser(version), path, kingdom)
     }
 
