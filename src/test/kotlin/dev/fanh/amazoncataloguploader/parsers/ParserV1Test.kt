@@ -86,10 +86,8 @@ class ParserV1Test {
     }
 
     @Test(expected = Exception::class)
-    fun parseEmptyKingdoms() {
-        // when
-        val result = parser.parseKingdoms("./src/test/resources/testEmptyKingdoms.json")
-    }
+    fun parseEmptyKingdoms() = parser.parseKingdoms("./src/test/resources/testEmptyKingdoms.json")
+
 
     private fun getExpectedSpeciesList(): SpeciesList {
         val animal1 = SpeciesListDataObject("idAnimal1",
@@ -109,7 +107,5 @@ class ParserV1Test {
         return SpeciesList("V1", "animalia", listOf(animal1, animal2))
     }
 
-    private fun getExpectedKingdoms(): KingdomList {
-        return KingdomList("V1", listOf(Kingdom("Animalia")))
-    }
+    private fun getExpectedKingdoms(): KingdomList = KingdomList("V1", listOf(Kingdom("Animalia")))
 }

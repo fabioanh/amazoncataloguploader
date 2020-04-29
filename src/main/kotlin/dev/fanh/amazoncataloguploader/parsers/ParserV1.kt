@@ -5,7 +5,7 @@ import dev.fanh.amazoncataloguploader.data.*
 import dev.fanh.amazoncataloguploader.utils.isoLocation
 import dev.fanh.amazoncataloguploader.utils.languageFromJsonV1
 
-public class ParserV1 : Parser {
+class ParserV1 : Parser {
     override val version: ParserVersion = ParserVersion.V1
     private val gson: Gson = GsonBuilder().create()
 
@@ -74,10 +74,9 @@ public class ParserV1 : Parser {
                 })
     }
 
-    private fun extractCommonNames(jsonCommonNames: JsonElement?): List<LanguagedValue>? {
+    private fun extractCommonNames(jsonCommonNames: JsonElement?): List<LanguagedValue>? =
+            jsonCommonNames?.asJsonArray?.map { obj -> LanguagedValue(obj.asJsonObject.get("name").asString, languageFromJsonV1(obj.asJsonObject.get("language"))) }
 
-        return jsonCommonNames?.asJsonArray?.map { obj -> LanguagedValue(obj.asJsonObject.get("name").asString, languageFromJsonV1(obj.asJsonObject.get("language"))) }
-    }
 
     override fun parseKingdoms(filename: String): KingdomList {
         val kingdoms = gson.fromJson(jsonFileReader(filename), Array<String>::class.java)

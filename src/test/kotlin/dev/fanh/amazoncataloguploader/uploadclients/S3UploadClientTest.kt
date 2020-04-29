@@ -14,7 +14,7 @@ import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
 
-internal class S3UploadClientTest {
+class S3UploadClientTest {
 
     @MockK
     private lateinit var s3Client: AmazonS3

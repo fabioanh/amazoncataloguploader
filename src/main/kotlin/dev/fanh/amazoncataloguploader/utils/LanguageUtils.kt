@@ -51,10 +51,9 @@ private val languagesMap = mapOf<String?, String>(
         "Tupí" to "tupi",
         "Turco" to "tr",
         "Yuri" to "Yuri",
-
         null to "unknown")
 
-public fun languageFromJsonV1(languageRawString: JsonElement?): String {
+fun languageFromJsonV1(languageRawString: JsonElement?): String {
     if (languageRawString is JsonNull) {
         return "unknown"
     }
