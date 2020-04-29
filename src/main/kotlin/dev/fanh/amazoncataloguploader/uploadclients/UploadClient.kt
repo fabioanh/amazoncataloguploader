@@ -1,10 +1,9 @@
 package dev.fanh.amazoncataloguploader.uploadclients
 
+import dev.fanh.amazoncataloguploader.data.Kingdom
 import dev.fanh.amazoncataloguploader.data.KingdomList
 import dev.fanh.amazoncataloguploader.data.Species
 import dev.fanh.amazoncataloguploader.data.SpeciesList
-import java.io.File
-import java.io.Reader
 
 interface UploadClient {
     val type: UploadClientType
@@ -12,12 +11,12 @@ interface UploadClient {
     /**
      * Upload a list of species
      */
-    fun uploadSpecies(species: List<Species>)
+    fun uploadSpecies(species: List<Species>, kingdom: Kingdom)
 
     /**
      * Upload the SpeciesList information
      */
-    fun uploadSpeciesList(speciesList: SpeciesList)
+    fun uploadSpeciesList(speciesList: SpeciesList, kingdom: Kingdom)
 
     /**
      * Upload a list of kingdoms

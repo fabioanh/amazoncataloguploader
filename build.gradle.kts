@@ -44,6 +44,9 @@ dependencies {
 
     //Clikt
     implementation("com.github.ajalt:clikt:2.6.0")
+
+    //MockK
+    testImplementation("io.mockk:mockk:1.9.3")
 }
 
 application {

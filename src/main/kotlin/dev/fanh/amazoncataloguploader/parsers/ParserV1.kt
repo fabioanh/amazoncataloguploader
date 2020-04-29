@@ -19,10 +19,11 @@ public class ParserV1 : Parser {
         return value
     }
 
-    override fun parseSpecies(filename: String): Species {
+    override fun parseSpecies(filename: String, kingdom: Kingdom): Species {
         val speciesDataObject = gson.fromJson(jsonFileReader(filename), JsonObject::class.java)
         return Species(version = this.version.name,
                 id = speciesDataObject.get("_id").asString,
+                kingdom = kingdom.name.toLowerCase(),
                 behaviour = speciesDataObject.get("behaviorApprovedInUse")?.asJsonObject?.get("behavior")?.asJsonObject?.get("behaviorUnstructured")?.asString,
                 commonNames = extractCommonNames(speciesDataObject.get("commonNames")),
                 description = speciesDataObject.get("abstractApprovedInUse")?.asJsonObject?.get("abstract")?.asString,
@@ -61,10 +62,11 @@ public class ParserV1 : Parser {
         return if (result!!.isEmpty()) null else result
     }
 
-    override fun parseSpeciesList(filename: String): SpeciesList {
+    override fun parseSpeciesList(filename: String, kingdom: Kingdom): SpeciesList {
         val speciesArrayJsonObject = gson.fromJson(jsonFileReader(filename), Array<JsonObject>::class.java)
         val speciesDataObjects = ArrayList<SpeciesListDataObject>()
         return SpeciesList(this.version.name,
+                kingdom.name.toLowerCase(),
                 speciesArrayJsonObject.map { obj ->
                     SpeciesListDataObject(obj.get("_id").asString,
                             extractCommonNames(obj.get("commonNames")),

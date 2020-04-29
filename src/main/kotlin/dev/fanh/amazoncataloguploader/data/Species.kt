@@ -2,6 +2,7 @@ package dev.fanh.amazoncataloguploader.data
 
 data class Species(val version: String,
                    val id: String,
+                   val kingdom: String,
                    val behaviour: String? = null,
                    val commonNames: List<LanguagedValue>? = null,
                    val description: String? = null,
