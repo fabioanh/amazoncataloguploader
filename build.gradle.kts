@@ -23,6 +23,9 @@ dependencies {
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
 
+    // Align versions of amazon sdk components
+    implementation(platform("com.amazonaws:aws-java-sdk-bom:1.11.772"))
+
     // Use the Kotlin JDK 8 standard library.
     implementation(kotlin("stdlib-jdk8"))
 
@@ -33,7 +36,10 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 
     // Amazon AWS-S3 libraries
-    implementation("com.amazonaws:aws-java-sdk-s3control:1.11.753")
+    implementation("com.amazonaws:aws-java-sdk-s3control")
+
+    // Amazon DynamoDB
+    implementation("com.amazonaws:aws-java-sdk-dynamodb")
 
     // GSon
     implementation("com.google.code.gson:gson:2.8.5")

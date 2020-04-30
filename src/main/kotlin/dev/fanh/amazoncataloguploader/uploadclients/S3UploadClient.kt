@@ -14,9 +14,10 @@ import dev.fanh.amazoncataloguploader.data.SpeciesList
 import mu.KotlinLogging
 import java.util.*
 
+private val logger = KotlinLogging.logger {}
+
 class S3UploadClient : UploadClient {
 
-    private val logger = KotlinLogging.logger {}
 
     override val type: UploadClientType = UploadClientType.S3
 
@@ -40,7 +41,7 @@ class S3UploadClient : UploadClient {
                 .build()
     }
 
-    constructor(s3Client:AmazonS3){
+    constructor(s3Client: AmazonS3) {
         this.s3Client = s3Client
     }
 

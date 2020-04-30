@@ -80,7 +80,7 @@ class App : CliktCommand() {
 
     }
 
-    private fun processSingleSpecies(parser: Parser, uploadClient:UploadClient, path: String, kingdom: Kingdom) {
+    private fun processSingleSpecies(parser: Parser, uploadClient: UploadClient, path: String, kingdom: Kingdom) {
         logger.info { "Parsing species in file: ${Paths.get(path).fileName}" }
         val species: Species = parser.parseSpecies(path, kingdom)
         uploadClient.uploadSpecies(listOf(species), kingdom)
