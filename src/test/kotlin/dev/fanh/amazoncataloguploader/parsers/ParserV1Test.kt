@@ -86,7 +86,10 @@ class ParserV1Test {
     }
 
     @Test(expected = Exception::class)
-    fun parseEmptyKingdoms() = parser.parseKingdoms("./src/test/resources/testEmptyKingdoms.json")
+    fun parseEmptyKingdoms() {
+        // when
+        parser.parseKingdoms("./src/test/resources/testEmptyKingdoms.json")
+    }
 
 
     private fun getExpectedSpeciesList(): SpeciesList {

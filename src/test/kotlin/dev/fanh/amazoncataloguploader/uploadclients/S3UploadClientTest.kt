@@ -7,25 +7,32 @@ import dev.fanh.amazoncataloguploader.parsers.ParserVersion
 import dev.fanh.amazoncataloguploader.testutils.getBasicSpecies
 import dev.fanh.amazoncataloguploader.testutils.getBasicSpeciesAnt
 import io.mockk.MockKAnnotations
+import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
+import io.mockk.junit5.MockKExtension
 import io.mockk.verify
 import org.junit.Before
 import org.junit.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import kotlin.test.assertEquals
 
+@ExtendWith(MockKExtension::class)
 class S3UploadClientTest {
 
-    @MockK
+    @MockK(relaxed = true)
     private lateinit var s3Client: AmazonS3
 
     @InjectMockKs
-    private var client = S3UploadClient()
+    private lateinit var client:S3UploadClient
 
     private val gson = Gson()
 
     @Before
-    fun setUp() = MockKAnnotations.init(this)
+    fun setUp(){
+        MockKAnnotations.init(this)
+        this.client = S3UploadClient(s3Client)
+    }
 
     @Test
     fun getType() {

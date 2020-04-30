@@ -47,6 +47,10 @@ dependencies {
 
     //MockK
     testImplementation("io.mockk:mockk:1.9.3")
+
+    //Junit 5
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.3.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.3.1")
 }
 
 application {

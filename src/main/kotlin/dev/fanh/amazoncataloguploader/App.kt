@@ -3,16 +3,10 @@
  */
 package dev.fanh.amazoncataloguploader
 
-import com.amazonaws.auth.AWSCredentials
-import com.amazonaws.auth.AWSStaticCredentialsProvider
-import com.amazonaws.auth.BasicAWSCredentials
-import com.amazonaws.regions.Regions
-import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.enum
-import com.google.gson.Gson
 import dev.fanh.amazoncataloguploader.data.Kingdom
 import dev.fanh.amazoncataloguploader.data.KingdomList
 import dev.fanh.amazoncataloguploader.data.Species
@@ -20,9 +14,12 @@ import dev.fanh.amazoncataloguploader.data.SpeciesList
 import dev.fanh.amazoncataloguploader.parsers.ObjectFileParserFactory
 import dev.fanh.amazoncataloguploader.parsers.Parser
 import dev.fanh.amazoncataloguploader.parsers.ParserVersion
+import dev.fanh.amazoncataloguploader.uploadclients.ObjectUploadClientFactory
+import dev.fanh.amazoncataloguploader.uploadclients.UploadClient
+import dev.fanh.amazoncataloguploader.uploadclients.UploadClientType
 import mu.KotlinLogging
 import java.nio.file.Paths
-import java.util.*
+import kotlin.collections.ArrayList
 
 private val logger = KotlinLogging.logger {}
 
@@ -32,77 +29,61 @@ class App : CliktCommand() {
     val mode: Mode? by option(help = "Mode to use for the upload. Full, Partial or Single").enum<Mode>().default(Mode.FULL)
     val path: String by option(help = "Path to the root directory in case of Full or partial modes, or path to the file in case of the single upload").default("/home/fakefla/develop/python/workspace/AmazonCatalog/animal_data/")
     val version: String by option(help = "Version of the parsers to be used").default("V1")
+    val target: String by option(help = "Target to be used to store the data").default("DYNAMO_DB")
     val kingdom: String by option(help = "Kingdom to be used in the single species upload").default("animalia")
     val delimiter: String? by option(help = "Id delimiter of the list of species to start from it in case a partial upload is required")
 
-    private val bucketCatalog: String = "amazoncatalogfanh"
-
-    private val credentials: AWSCredentials = run {
-        val props = javaClass.classLoader.getResourceAsStream("aws-credentials.properties").use {
-            Properties().apply { load(it) }
-        }
-        BasicAWSCredentials(props["accessKey"] as String?, props["secretKey"] as String?)
-    }
-
-    private val amazonS3Client = AmazonS3ClientBuilder.standard()
-            .withRegion(Regions.SA_EAST_1)
-            .withCredentials(AWSStaticCredentialsProvider(credentials))
-            .build()
-
-    private val gson = Gson()
-
     override fun run() {
-        val parserVersion: ParserVersion = ParserVersion.valueOf(version)
+        val parserVersion: ParserVersion = ParserVersion.valueOf(version.toUpperCase())
+        val uploadClientType: UploadClientType = UploadClientType.valueOf(target.toUpperCase())
         when (mode) {
-            Mode.FULL -> uploadData(this.path, parserVersion)
-            Mode.PARTIAL -> uploadData(this.path, parserVersion, delimiter)
-            Mode.SINGLE -> uploadSingleSpecies(this.path, parserVersion, Kingdom(this.kingdom))
+            Mode.FULL -> uploadData(this.path, parserVersion, uploadClientType)
+            Mode.PARTIAL -> uploadData(this.path, parserVersion, uploadClientType, delimiter)
+            Mode.SINGLE -> uploadSingleSpecies(this.path, parserVersion, uploadClientType, Kingdom(this.kingdom))
         }
         logger.info("Data processing finished successfully")
     }
 
-    private fun uploadSingleSpecies(path: String, version: ParserVersion, kingdom: Kingdom) {
+    private fun uploadSingleSpecies(path: String, version: ParserVersion, uploadClientType: UploadClientType, kingdom: Kingdom) {
         // TODO: Implement update of speciesList to add the single entry if not present, or update it if already there
-        processSpecies(ObjectFileParserFactory.getParser(version), path, kingdom)
+        processSingleSpecies(ObjectFileParserFactory.getParser(version), ObjectUploadClientFactory.getUploadClient(uploadClientType), path, kingdom)
     }
 
-    private fun uploadData(rootPath: String, version: ParserVersion, partialIdDelimiter: String? = null) {
+    private fun uploadData(rootPath: String, version: ParserVersion, uploadClientType: UploadClientType, partialIdDelimiter: String? = null) {
         logger.info("Data upload process started...")
         val parser: Parser = ObjectFileParserFactory.getParser(version)
+        val uploadClient: UploadClient = ObjectUploadClientFactory.getUploadClient(uploadClientType)
         // Parse Kingdoms
         logger.info("Parsing kingdoms")
         val kingdoms: KingdomList = parser.parseKingdoms("${rootPath}kingdoms.json")
         logger.info { "${kingdoms.kingdoms.size} kingdoms found" }
-        // Upload Kingdoms to S3
-        amazonS3Client.putObject(bucketCatalog, "/kingdoms.json", gson.toJson(kingdoms))
-        logger.info("Kingdoms uploaded successfully to S3")
+        // Upload Kingdoms
+        uploadClient.uploadKingdoms(kingdoms)
 
         // Parse species_list.json for each kingdom folder
         kingdoms.kingdoms.forEach { kingdom ->
-            logger.info { "Parsing species list for kingdom $kingdom" }
+            logger.info { "Parsing species list for kingdom ${kingdom.name}" }
             val speciesList: SpeciesList = parser.parseSpeciesList("$rootPath${kingdom.name.toLowerCase()}/species_list.json", kingdom)
-            // Upload species_list.json to S3
-            amazonS3Client.putObject(bucketCatalog, "/${kingdom.name.toLowerCase()}/speciesList.json", gson.toJson(speciesList))
-            logger.info { "Species List for $kingdom uploaded successfully to S3" }
-            logger.info { "${speciesList.species.size} species found for $kingdom" }
+            // Upload SpeciesList
+            uploadClient.uploadSpeciesList(speciesList, kingdom)
             var performProcessing = partialIdDelimiter == null
-            // Parse each species in the species folder
+            // Parse species in the species folder
+            val species = ArrayList<Species>()
             speciesList.species.forEach {
                 performProcessing = performProcessing or (it.id == partialIdDelimiter)
                 if (performProcessing) {
-                    processSpecies(parser, "$rootPath${kingdom.name.toLowerCase()}/species/${it.id}.json", kingdom)
+                    species.add(parser.parseSpecies("$rootPath${kingdom.name.toLowerCase()}/species/${it.id}.json", kingdom))
                 }
             }
+            uploadClient.uploadSpecies(species, kingdom)
         }
 
     }
 
-    private fun processSpecies(parser: Parser, path: String, kingdom: Kingdom) {
+    private fun processSingleSpecies(parser: Parser, uploadClient:UploadClient, path: String, kingdom: Kingdom) {
         logger.info { "Parsing species in file: ${Paths.get(path).fileName}" }
         val species: Species = parser.parseSpecies(path, kingdom)
-        // Upload each species to S3
-        amazonS3Client.putObject(bucketCatalog, "/${kingdom.name.toLowerCase()}/species/${species.id}.json", gson.toJson(species))
-        logger.info { "Species ${species.id} uploaded successfully to S3" }
+        uploadClient.uploadSpecies(listOf(species), kingdom)
     }
 }
 
