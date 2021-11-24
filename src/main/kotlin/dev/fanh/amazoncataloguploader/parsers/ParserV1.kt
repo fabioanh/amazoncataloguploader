@@ -21,30 +21,53 @@ class ParserV1 : Parser {
 
     override fun parseSpecies(filename: String, kingdom: Kingdom): Species {
         val speciesDataObject = gson.fromJson(jsonFileReader(filename), JsonObject::class.java)
-        return Species(version = this.version.name,
-                id = speciesDataObject.get("_id").asString,
-                kingdom = kingdom.name.toLowerCase(),
-                behaviour = speciesDataObject.get("behaviorApprovedInUse")?.asJsonObject?.get("behavior")?.asJsonObject?.get("behaviorUnstructured")?.asString,
-                commonNames = extractCommonNames(speciesDataObject.get("commonNames")),
-                description = speciesDataObject.get("abstractApprovedInUse")?.asJsonObject?.get("abstract")?.asString,
-                endangeredStatus = extractEndangeredStatus(speciesDataObject.get("threatStatusApprovedInUse")?.asJsonObject?.get("threatStatus")?.asJsonArray),
-                feeding = speciesDataObject.get("feedingApprovedInUse")?.asJsonObject?.get("feeding")?.asJsonObject?.get("feedingUnstructured")?.asString,
-                fullDescription = speciesDataObject.get("fullDescriptionApprovedInUse")?.asJsonObject?.get("fullDescription")?.asJsonObject?.getNullable("fullDescriptionUnstructured")?.asString,
-                habitat = speciesDataObject.get("habitatsApprovedInUse")?.asJsonObject?.get("habitats")?.asJsonObject?.get("habitatUnstructured")?.asString,
-                imageURLs = extractImages(speciesDataObject.get("ancillaryDataApprovedInUse")?.asJsonObject?.get("ancillaryData")?.asJsonArray),
-                lifecycle = speciesDataObject.get("lifeCycleApprovedInUse")?.asJsonObject?.get("lifeCycle")?.asJsonObject?.get("lifeCycleUnstructured")?.asString,
-                lifeForm = speciesDataObject.get("lifeFormApprovedInUse")?.asJsonObject?.get("lifeForm")?.asJsonObject?.get("lifeFormUnstructured")?.asString,
-                migration = speciesDataObject.get("migratoryApprovedInUse")?.asJsonObject?.get("migratory")?.asJsonObject?.get("migratoryUnstructured")?.asString,
-                reproduction = speciesDataObject.get("reproductionApprovedInUse")?.asJsonObject?.get("reproduction")?.asJsonObject?.get("reproductionUnstructured")?.asString,
-                scientificName = speciesDataObject.get("scientificNameSimple")?.asString
-                        ?: throw Exception("Scientific Name should not be null"))
+        return Species(
+            version = this.version.name,
+            id = speciesDataObject.get("_id").asString,
+            kingdom = kingdom.name.lowercase(),
+            behaviour = speciesDataObject.get("behaviorApprovedInUse")?.asJsonObject?.get("behavior")?.asJsonObject?.get(
+                "behaviorUnstructured"
+            )?.asString,
+            commonNames = extractCommonNames(speciesDataObject.get("commonNames")),
+            description = speciesDataObject.get("abstractApprovedInUse")?.asJsonObject?.get("abstract")?.asString,
+            endangeredStatus = extractEndangeredStatus(
+                speciesDataObject.get("threatStatusApprovedInUse")?.asJsonObject?.get(
+                    "threatStatus"
+                )?.asJsonArray
+            ),
+            feeding = speciesDataObject.get("feedingApprovedInUse")?.asJsonObject?.get("feeding")?.asJsonObject?.get("feedingUnstructured")?.asString,
+            fullDescription = speciesDataObject.get("fullDescriptionApprovedInUse")?.asJsonObject?.get("fullDescription")?.asJsonObject?.getNullable(
+                "fullDescriptionUnstructured"
+            )?.asString,
+            habitat = speciesDataObject.get("habitatsApprovedInUse")?.asJsonObject?.get("habitats")?.asJsonObject?.get("habitatUnstructured")?.asString,
+            imageURLs = extractImages(speciesDataObject.get("ancillaryDataApprovedInUse")?.asJsonObject?.get("ancillaryData")?.asJsonArray),
+            lifecycle = speciesDataObject.get("lifeCycleApprovedInUse")?.asJsonObject?.get("lifeCycle")?.asJsonObject?.get(
+                "lifeCycleUnstructured"
+            )?.asString,
+            lifeForm = speciesDataObject.get("lifeFormApprovedInUse")?.asJsonObject?.get("lifeForm")?.asJsonObject?.get(
+                "lifeFormUnstructured"
+            )?.asString,
+            migration = speciesDataObject.get("migratoryApprovedInUse")?.asJsonObject?.get("migratory")?.asJsonObject?.get(
+                "migratoryUnstructured"
+            )?.asString,
+            reproduction = speciesDataObject.get("reproductionApprovedInUse")?.asJsonObject?.get("reproduction")?.asJsonObject?.get(
+                "reproductionUnstructured"
+            )?.asString,
+            scientificName = speciesDataObject.get("scientificNameSimple")?.asString
+                ?: throw Exception("Scientific Name should not be null")
+        )
     }
 
     private fun extractEndangeredStatus(endangeredStatusElements: JsonArray?): List<LocalisedValue>? {
         val endangeredStatus = ArrayList<LocalisedValue>()
         endangeredStatusElements?.forEach { elem ->
-            val location = elem.asJsonObject.get("threatStatusAtomized")?.asJsonObject?.get("appliesTo")?.asJsonObject?.get("country")?.asString
-            val threatValue = elem.asJsonObject.get("threatStatusAtomized")?.asJsonObject?.get("threatCategory")?.asJsonObject?.get("measurementValue")?.asString
+            var location =
+                elem.asJsonObject.get("threatStatusAtomized")?.asJsonObject?.get("appliesTo")?.asJsonObject?.get("country")?.asString
+            if (location != null) {
+                location = location.ifBlank { "Global" }
+            }
+            val threatValue =
+                elem.asJsonObject.get("threatStatusAtomized")?.asJsonObject?.get("threatCategory")?.asJsonObject?.get("measurementValue")?.asString
             if (threatValue != null && location != null) {
                 endangeredStatus.add(LocalisedValue(threatValue, isoLocation(location)))
             }
@@ -64,18 +87,24 @@ class ParserV1 : Parser {
 
     override fun parseSpeciesList(filename: String, kingdom: Kingdom): SpeciesList {
         val speciesArrayJsonObject = gson.fromJson(jsonFileReader(filename), Array<JsonObject>::class.java)
-        val speciesDataObjects = ArrayList<SpeciesListDataObject>()
         return SpeciesList(this.version.name,
-                kingdom.name.toLowerCase(),
-                speciesArrayJsonObject.map { obj ->
-                    SpeciesListDataObject(obj.get("_id").asString,
-                            extractCommonNames(obj.get("commonNames")),
-                            obj.get("scientificNameSimple").asString)
-                })
+            kingdom.name.lowercase(),
+            speciesArrayJsonObject.map { obj ->
+                SpeciesListDataObject(
+                    obj.get("_id").asString,
+                    extractCommonNames(obj.get("commonNames")),
+                    obj.get("scientificNameSimple").asString
+                )
+            })
     }
 
     private fun extractCommonNames(jsonCommonNames: JsonElement?): List<LanguagedValue>? =
-            jsonCommonNames?.asJsonArray?.map { obj -> LanguagedValue(obj.asJsonObject.get("name").asString, languageFromJsonV1(obj.asJsonObject.get("language"))) }
+        jsonCommonNames?.asJsonArray?.map { obj ->
+            LanguagedValue(
+                obj.asJsonObject.get("name").asString,
+                languageFromJsonV1(obj.asJsonObject.get("language"))
+            )
+        }
 
 
     override fun parseKingdoms(filename: String): KingdomList {

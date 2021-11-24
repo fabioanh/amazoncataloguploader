@@ -3,11 +3,9 @@ package dev.fanh.amazoncataloguploader.uploadclients
 import com.amazonaws.services.s3.AmazonS3
 import com.google.gson.Gson
 import dev.fanh.amazoncataloguploader.data.*
-import dev.fanh.amazoncataloguploader.parsers.ParserVersion
 import dev.fanh.amazoncataloguploader.testutils.getBasicSpecies
 import dev.fanh.amazoncataloguploader.testutils.getBasicSpeciesAnt
 import io.mockk.MockKAnnotations
-import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -45,7 +43,7 @@ class S3UploadClientTest {
     @Test
     fun uploadSingleKingdom() {
         // given
-        val kingdomList = getSingleKingdom()
+        val kingdomList = TestHelper.getSingleKingdom()
         // when
         client.uploadKingdoms(kingdomList)
         // then
@@ -55,7 +53,7 @@ class S3UploadClientTest {
     @Test
     fun uploadMultipleKingdoms(){
         // given
-        val kingdomList = getKingdoms()
+        val kingdomList = TestHelper.getKingdoms()
         // when
         client.uploadKingdoms(kingdomList)
         // then
@@ -66,11 +64,11 @@ class S3UploadClientTest {
     fun uploadSpeciesList() {
         // given
         val kingdom = Kingdom("Animalia")
-        val speciesList = getSpiecesList()
+        val speciesList = TestHelper.getSpeciesList()
         // when
         client.uploadSpeciesList(speciesList, kingdom)
         // then
-        verify { s3Client.putObject("amazoncatalogfanh", "/${kingdom.name.toLowerCase()}/speciesList.json", gson.toJson(speciesList)) }
+        verify { s3Client.putObject("amazoncatalogfanh", "/${kingdom.name.lowercase()}/speciesList.json", gson.toJson(speciesList)) }
     }
 
     @Test
@@ -81,7 +79,7 @@ class S3UploadClientTest {
         // when
         client.uploadSpecies(listOf(species), kingdom)
         // then
-        verify { s3Client.putObject("amazoncatalogfanh", "/${kingdom.name.toLowerCase()}/species/${species.id}.json", gson.toJson(species)) }
+        verify { s3Client.putObject("amazoncatalogfanh", "/${kingdom.name.lowercase()}/species/${species.id}.json", gson.toJson(species)) }
     }
 
     @Test
@@ -93,20 +91,9 @@ class S3UploadClientTest {
         // when
         client.uploadSpecies(listOf(jaguar, ant), kingdom)
         // then
-        verify { s3Client.putObject("amazoncatalogfanh", "/${kingdom.name.toLowerCase()}/species/${jaguar.id}.json", gson.toJson(jaguar)) }
-        verify { s3Client.putObject("amazoncatalogfanh", "/${kingdom.name.toLowerCase()}/species/${ant.id}.json", gson.toJson(ant)) }
+        verify { s3Client.putObject("amazoncatalogfanh", "/${kingdom.name.lowercase()}/species/${jaguar.id}.json", gson.toJson(jaguar)) }
+        verify { s3Client.putObject("amazoncatalogfanh", "/${kingdom.name.lowercase()}/species/${ant.id}.json", gson.toJson(ant)) }
     }
 
-    private fun getSpiecesList(): SpeciesList {
-        val speciesList = SpeciesListDataObject("id", listOf(LanguagedValue("a name", "en")), "A Scientific Name")
-        return SpeciesList(ParserVersion.V1.name, "animalia", listOf(speciesList))
-    }
 
-    private fun getSingleKingdom(): KingdomList {
-        return KingdomList(ParserVersion.V1.name, listOf(Kingdom("Animalia")))
-    }
-
-    private fun getKingdoms(): KingdomList {
-        return KingdomList(ParserVersion.V1.name, listOf(Kingdom("Animalia"), Kingdom("Herbalia")))
-    }
 }

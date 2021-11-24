@@ -13,19 +13,19 @@ interface Parser {
     /**
      * Parse method to convert a single species data to the application required structure
      */
-    fun parseSpecies(fileName: String, kingdom: Kingdom): Species
+    fun parseSpecies(filename: String, kingdom: Kingdom): Species
 
     /**
      * Parse method to convert the list of species data to the application required list structure
      */
-    fun parseSpeciesList(fileName: String, kingdom: Kingdom): SpeciesList
+    fun parseSpeciesList(filename: String, kingdom: Kingdom): SpeciesList
 
     /**
      * Parse method to convert the given list of kingdoms available to the application required structure
      */
-    fun parseKingdoms(fileName: String): KingdomList
+    fun parseKingdoms(filename: String): KingdomList
 }
 
-fun jsonFileReader(fileName: String): Reader{
-    return File(fileName).bufferedReader(Charsets.UTF_8)
+fun jsonFileReader(filename: String): Reader{
+    return File(filename).bufferedReader(Charsets.UTF_8)
 }

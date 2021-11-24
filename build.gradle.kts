@@ -4,18 +4,18 @@
  * This generated file contains a sample Kotlin application project to get you started.
  */
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     // Apply the Kotlin JVM plugin to add support for Kotlin.
-    kotlin("jvm") version "1.3.71"
+    kotlin("jvm") version "1.6.0"
 
     // Apply the application plugin to add support for building a CLI application.
     application
 }
 
+apply(plugin = "org.jetbrains.kotlin.jvm")
+
 repositories {
-    jcenter()
     mavenCentral()
 }
 
@@ -61,10 +61,7 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClassName = "dev.fanh.amazoncataloguploader.AppKt"
+//    mainClassName = "dev.fanh.amazoncataloguploader.AppKt"
+    mainClass.set("dev.fanh.amazoncataloguploader.AppKt")
 }
-
-val compileKotlin: KotlinCompile by tasks
-
-compileKotlin.kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8.toString()
 

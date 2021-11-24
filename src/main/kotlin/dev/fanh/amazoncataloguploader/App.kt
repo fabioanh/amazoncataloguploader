@@ -27,19 +27,20 @@ enum class Mode { FULL, SINGLE, PARTIAL }
 
 class App : CliktCommand() {
     val mode: Mode? by option(help = "Mode to use for the upload. Full, Partial or Single").enum<Mode>().default(Mode.FULL)
-    val path: String by option(help = "Path to the root directory in case of Full or partial modes, or path to the file in case of the single upload").default("/home/fakefla/develop/python/workspace/AmazonCatalog/animal_data/")
+    val path: String by option(help = "Path to the root directory in case of Full or partial modes, or path to the file in case of the single upload").default("/home/fakefla/develop/data/animal_data/")
     val version: String by option(help = "Version of the parsers to be used").default("V1")
     val target: String by option(help = "Target to be used to store the data").default("DYNAMO_DB")
     val kingdom: String by option(help = "Kingdom to be used in the single species upload").default("animalia")
     val delimiter: String? by option(help = "Id delimiter of the list of species to start from it in case a partial upload is required")
 
     override fun run() {
-        val parserVersion: ParserVersion = ParserVersion.valueOf(version.toUpperCase())
-        val uploadClientType: UploadClientType = UploadClientType.valueOf(target.toUpperCase())
+        val parserVersion: ParserVersion = ParserVersion.valueOf(version.uppercase())
+        val uploadClientType: UploadClientType = UploadClientType.valueOf(target.uppercase())
         when (mode) {
             Mode.FULL -> uploadData(this.path, parserVersion, uploadClientType)
             Mode.PARTIAL -> uploadData(this.path, parserVersion, uploadClientType, delimiter)
             Mode.SINGLE -> uploadSingleSpecies(this.path, parserVersion, uploadClientType, Kingdom(this.kingdom))
+            else -> throw UnsupportedOperationException("Unsupported upload mode")
         }
         logger.info("Data processing finished successfully")
     }
@@ -63,7 +64,7 @@ class App : CliktCommand() {
         // Parse species_list.json for each kingdom folder
         kingdoms.kingdoms.forEach { kingdom ->
             logger.info { "Parsing species list for kingdom ${kingdom.name}" }
-            val speciesList: SpeciesList = parser.parseSpeciesList("$rootPath${kingdom.name.toLowerCase()}/species_list.json", kingdom)
+            val speciesList: SpeciesList = parser.parseSpeciesList("$rootPath${kingdom.name.lowercase()}/species_list.json", kingdom)
             // Upload SpeciesList
             uploadClient.uploadSpeciesList(speciesList, kingdom)
             var performProcessing = partialIdDelimiter == null
@@ -72,7 +73,7 @@ class App : CliktCommand() {
             speciesList.species.forEach {
                 performProcessing = performProcessing or (it.id == partialIdDelimiter)
                 if (performProcessing) {
-                    species.add(parser.parseSpecies("$rootPath${kingdom.name.toLowerCase()}/species/${it.id}.json", kingdom))
+                    species.add(parser.parseSpecies("$rootPath${kingdom.name.lowercase()}/species/${it.id}.json", kingdom))
                 }
             }
             uploadClient.uploadSpecies(species, kingdom)

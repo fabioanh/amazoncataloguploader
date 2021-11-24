@@ -32,7 +32,7 @@ class S3UploadClient : UploadClient {
         BasicAWSCredentials(props["accessKey"] as String?, props["secretKey"] as String?)
     }
 
-    private lateinit var s3Client: AmazonS3
+    private val s3Client: AmazonS3
 
     constructor() {
         this.s3Client = AmazonS3ClientBuilder.standard()
@@ -51,7 +51,7 @@ class S3UploadClient : UploadClient {
      */
     override fun uploadSpecies(species: List<Species>, kingdom: Kingdom) {
         species.forEach { s ->
-            s3Client?.putObject(bucketCatalog, "/${kingdom.name.toLowerCase()}/species/${s.id}.json", gson.toJson(s))
+            s3Client.putObject(bucketCatalog, "/${kingdom.name.lowercase()}/species/${s.id}.json", gson.toJson(s))
             logger.info { "Species ${s.id} uploaded successfully to S3" }
         }
     }
@@ -60,7 +60,7 @@ class S3UploadClient : UploadClient {
      * Upload the SpeciesList information
      */
     override fun uploadSpeciesList(speciesList: SpeciesList, kingdom: Kingdom) {
-        s3Client?.putObject(bucketCatalog, "/${kingdom.name.toLowerCase()}/speciesList.json", gson.toJson(speciesList))
+        s3Client.putObject(bucketCatalog, "/${kingdom.name.lowercase()}/speciesList.json", gson.toJson(speciesList))
         logger.info { "Species List for ${kingdom.name} uploaded successfully to S3" }
         logger.info { "${speciesList.species.size} species found for $kingdom" }
     }
@@ -69,7 +69,7 @@ class S3UploadClient : UploadClient {
      * Upload a list of kingdoms
      */
     override fun uploadKingdoms(kingdoms: KingdomList) {
-        s3Client?.putObject(bucketCatalog, "/kingdoms.json", gson.toJson(kingdoms))
+        s3Client.putObject(bucketCatalog, "/kingdoms.json", gson.toJson(kingdoms))
         logger.info("Kingdoms uploaded successfully to S3")
     }
 }
